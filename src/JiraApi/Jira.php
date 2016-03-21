@@ -4,16 +4,15 @@ namespace JiraApi;
 
 class Jira
 {
-
-    protected $host;
-
+    public $host;
+    
     public function __construct(array $config = array())
     {
         $this->request = new RestRequest();
         $this->request->username = (isset($config['username'])) ? $config['username'] : null;
         $this->request->password = (isset($config['password'])) ? $config['password'] : null;
         $host = (isset($config['host'])) ? $config['host'] : null; 
-        $this->host = 'https://' . $host . '/rest/api/2/';
+       $this->host = 'https://' . $host . '/rest/api/2/';
     }
 
     public function testLogin()
@@ -106,21 +105,10 @@ class Jira
         return false;
     }
 
+    
     public function queryIssue($query)
     {
-        function createPairs($obj) {
-            $str = "";
-            foreach ($obj as $key => $value) {
-                if ($key != 'jql') {
-                    $str .= "$key=$value&";
-                } else {
-                    $str .= trim($value, '"\'@') . '&';
-                }
-            }
-            return rtrim($str, '&');
-        }
-        $qs = createPairs($query);
-        $qs = urlencode($qs);
+        $qs = $this->createPairs($query);
         $this->request->OpenConnect($this->host . 'search?jql=' . $qs);
         $this->request->execute();
         $result = json_decode($this->request->getResponseBody());
@@ -130,6 +118,20 @@ class Jira
 
         return false;
     }
+
+    private function createPairs($obj)
+    {
+        $str = "";
+        foreach ($obj as $key => $value) {
+            if ($key != 'jql') {
+                $str .= "$key=$value&";
+            } else {
+                $str .= trim($value, '"\'@') . '&';
+            }
+        }
+        return rtrim($str, '&');
+    }
+
 
     public function createIssue($json)
     {
